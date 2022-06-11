@@ -26,7 +26,6 @@ const preview = await screenshot(
 
 preview.error; // Error | undefined
 preview.screenshots; // Map<resolution, Buffer>
-preview.screenshots.get('full'); // screenshot of full page, or undefined if an error occured
 preview.screenshots.get('1920x1080'); // screenshot of resolution 1920x1080 if requested, or undefiend
 preview.URLs; // set of URLs that were accessed
 preview.load_time_ms; // how long the page took to load

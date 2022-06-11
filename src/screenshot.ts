@@ -33,6 +33,8 @@ export interface PagePreview {
 export interface Resolution {
     x: number;
     y: number;
+    renderFullPage?: boolean;
+    resolutionAlias?: string;
 }
 
 export interface Options {
@@ -42,7 +44,14 @@ export interface Options {
 
 export async function screenshot(
     url: string,
-    resolutions: Resolution[],
+    resolutions: Resolution[] = [
+        {
+            x: 1920,
+            y: 1080,
+            renderFullPage: true,
+            resolutionAlias: 'full',
+        },
+    ],
     options: Options = {}
 ): Promise<PagePreview> {
     const preview: PagePreview = {
@@ -95,11 +104,12 @@ export async function screenshot(
 
         preview.load_time_ms = load_end - load_start;
 
-        for (const { x, y } of resolutions) {
+        for (const { x, y, renderFullPage, resolutionAlias } of resolutions) {
             await page.setViewport({ width: x, height: y });
 
             const screenshot = (await page.screenshot({
-                captureBeyondViewport: false,
+                captureBeyondViewport: renderFullPage,
+                fullPage: renderFullPage,
                 type: options.imgFormat || 'webp',
                 quality:
                     options.imgFormat === 'png'
@@ -108,23 +118,11 @@ export async function screenshot(
                 encoding: 'binary',
             })) as Buffer; // encoding:binary yields Buffer
 
-            preview.screenshots.set(`${x}x${y}`, screenshot);
+            preview.screenshots.set(
+                resolutionAlias || `${x}x${y}${renderFullPage ? '_full' : ''}`,
+                screenshot
+            );
         }
-
-        await page.setViewport({ width: 1920, height: 1080 });
-
-        const fullPageScreenshot = (await page.screenshot({
-            captureBeyondViewport: true,
-            type: options.imgFormat || 'webp',
-            quality:
-                options.imgFormat === 'png'
-                    ? undefined
-                    : options.imgQuality || 100,
-            encoding: 'binary',
-            fullPage: true,
-        })) as Buffer;
-
-        preview.screenshots.set('full', fullPageScreenshot);
 
         preview.html = await page.content();
 
