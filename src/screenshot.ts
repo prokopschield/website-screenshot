@@ -107,7 +107,35 @@ export async function screenshot(
         for (const { x, y, renderFullPage, resolutionAlias } of resolutions) {
             await page.setViewport({ width: x, height: y });
 
-            const screenshot = (await page.screenshot({
+            let element =
+                (await page.$('body')) ||
+                ((await page.$('*')) as puppeteer.ElementHandle<Element>);
+
+            while (element) {
+                const oneChild = await element.evaluate((element) => {
+                    const childNodes = element.childNodes;
+
+                    if (childNodes.length === 1) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                });
+
+                if (!oneChild) {
+                    break;
+                }
+
+                const childElement = await element.$('*');
+
+                if (childElement) {
+                    element = childElement;
+                } else {
+                    break;
+                }
+            }
+
+            const screenshot = (await element.screenshot({
                 captureBeyondViewport: renderFullPage,
                 fullPage: renderFullPage,
                 type: options.imgFormat || 'webp',
