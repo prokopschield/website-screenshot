@@ -1,7 +1,7 @@
 {
     "name": "@prokopschield/website-screenshot",
     "description": "Take a screenshot of a website",
-    "version": "0.1.0-2",
+    "version": "0.1.0-3",
     "main": "lib/index.js",
     "bin": {
         "website-screenshot": "lib/cli.js"
