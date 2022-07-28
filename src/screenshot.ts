@@ -135,21 +135,40 @@ export async function screenshot(
                 }
             }
 
-            const screenshot = (await element.screenshot({
-                captureBeyondViewport: renderFullPage,
-                fullPage: renderFullPage,
-                type: options.imgFormat || 'webp',
-                quality:
-                    options.imgFormat === 'png'
-                        ? undefined
-                        : options.imgQuality || 100,
-                encoding: 'binary',
-            })) as Buffer; // encoding:binary yields Buffer
+            try {
+                const screenshot = (await element.screenshot({
+                    captureBeyondViewport: renderFullPage,
+                    type: options.imgFormat || 'webp',
+                    quality:
+                        options.imgFormat === 'png'
+                            ? undefined
+                            : options.imgQuality || 100,
+                    encoding: 'binary',
+                })) as Buffer; // encoding:binary yields Buffer
 
-            preview.screenshots.set(
-                resolutionAlias || `${x}x${y}${renderFullPage ? '_full' : ''}`,
-                screenshot
-            );
+                preview.screenshots.set(
+                    resolutionAlias ||
+                        `${x}x${y}${renderFullPage ? '_full' : ''}`,
+                    screenshot
+                );
+            } catch {
+                const screenshot = (await page.screenshot({
+                    captureBeyondViewport: renderFullPage,
+                    fullPage: renderFullPage,
+                    type: options.imgFormat || 'webp',
+                    quality:
+                        options.imgFormat === 'png'
+                            ? undefined
+                            : options.imgQuality || 100,
+                    encoding: 'binary',
+                })) as Buffer; // encoding:binary yields Buffer
+
+                preview.screenshots.set(
+                    resolutionAlias ||
+                        `${x}x${y}${renderFullPage ? '_full' : ''}`,
+                    screenshot
+                );
+            }
         }
 
         preview.html = await page.content();
